@@ -1,0 +1,244 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-device-width, initial-scale=1.0">
+    <title>Vikasho.com - दुनिया का अपना हब</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f0f4f8; 
+            color: #333; 
+            line-height: 1.6; 
+        }
+        header { 
+            background: linear-gradient(to right, #ff6b35, #ff9f1c); 
+            color: white; 
+            text-align: center; 
+            padding: 4em 1em; 
+            background-image: url('https://source.unsplash.com/1600x400/?kanpur,temple'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        header h1 { font-size: 3em; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        header p { font-size: 1.3em; }
+        nav { 
+            background-color: #333; 
+            padding: 1em; 
+            text-align: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        nav a { 
+            color: white; 
+            text-decoration: none; 
+            margin: 0 1.5em; 
+            font-weight: bold; 
+            font-size: 1.1em; 
+        }
+        nav a:hover { color: #ff6b35; }
+        .container { 
+            max-width: 1200px; 
+            margin: 2em auto; 
+            padding: 0 20px; 
+            display: grid; 
+            gap: 2em; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+        }
+        section { 
+            background: white; 
+            padding: 1.5em; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            transition: transform 0.3s; 
+        }
+        section:hover { transform: translateY(-5px); }
+        h2 { color: #ff6b35; border-bottom: 2px solid #ff6b35; padding-bottom: 0.5em; }
+        .item { 
+            margin: 1em 0; 
+            padding: 1em; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .answer { 
+            display: none; 
+            background: #e0ffe0; 
+            padding: 0.5em; 
+            margin-top: 0.5em; 
+            border-radius: 5px; 
+        }
+        button { 
+            background: #007BFF; 
+            color: white; 
+            border: none; 
+            padding: 0.5em 1em; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            font-size: 1em; 
+        }
+        button:hover { background: #0056b3; }
+        form { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1em; 
+            max-width: 500px; 
+            margin: 0 auto; 
+        }
+        form input, form textarea { 
+            padding: 0.7em; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 1em; 
+        }
+        form textarea { height: 120px; }
+        footer { 
+            background-color: #333; 
+            color: white; 
+            text-align: center; 
+            padding: 1em; 
+            margin-top: 2em; 
+        }
+        @media (max-width: 600px) {
+            header h1 { font-size: 2em; }
+            nav a { margin: 0 0.5em; font-size: 1em; }
+            .container { grid-template-columns: 1fr; padding: 0 10px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Vikasho.com</h1>
+        <p>कांपुर से दुनिया तक—शायरी, सवाल, चुटकुले, रीजनिंग, और ढेर सारा मज़ा!</p>
+    </header>
+    <nav>
+        <a href="#home">होम</a>
+        <a href="#shayari">शायरी</a>
+        <a href="#reasoning">रीजनिंग</a>
+        <a href="#jokes">चुटकुले</a>
+        <a href="#blog">ब्लॉग</a>
+        <a href="#qa">Q&A</a>
+        <a href="#signup">साइन अप</a>
+    </nav>
+    <div class="container">
+        <section id="home">
+            <h2>स्वागत है!</h2>
+            <p>विकाशो.कॉम में आपको कांपुर का दिल, ऑटोमोबाइल का जुनून, और दुनिया भर की मस्ती मिलेगी। शायरी, चुटकुले, रीजनिंग, और ढेर सारी जानकारी—सब कुछ एक जगह!</p>
+        </section>
+        <section id="shayari">
+            <h2>शायरी</h2>
+            <div class="item">
+                <p>कांपुर की गलियों में, ऑटो का शोर,<br>3D डिजाइन से बनता है, सपनों का चोर!</p>
+            </div>
+            <div class="item">
+                <p>मंदिर की घंटी, Z Square की रौनक,<br>विकाशो.कॉम पे मिलेगी, हर दिल की बात थोड़ी!</p>
+            </div>
+        </section>
+        <section id="reasoning">
+            <h2>रीजनिंग क्वेश्चन्स</h2>
+            <div class="item">
+                <h3>सवाल: अगर कांपुर में 5 मंदिर हैं और हर मंदिर में 2 घंटियां हैं, तो कुल कितनी घंटियां?</h3>
+                <button onclick="document.getElementById('reason1').style.display='block'">उत्तर देखो</button>
+                <div id="reason1" class="answer">उत्तर: 10 घंटियां (5 मंदिर × 2 घंटियां)।</div>
+            </div>
+            <div class="item">
+                <h3>सवाल: टाटा नेक्सन 5 सीटों वाली है। अगर 3 कारें हैं, तो कुल कितने लोग बैठ सकते हैं?</h3>
+                <button onclick="document.getElementById('reason2').style.display='block'">उत्तर देखो</button>
+                <div id="reason2" class="answer">उत्तर: 15 लोग (3 कार × 5 सीटें)।</div>
+            </div>
+        </section>
+        <section id="jokes">
+            <h2>चुटकुले</h2>
+            <div class="item">
+                <h3>चुटकुला: कांपुर में सबसे तेज क्या दौड़ता है?</h3>
+                <button onclick="document.getElementById('joke1').style.display='block'">उत्तर देखो</button>
+                <div id="joke1" class="answer">उत्तर: ऑटो रिक्शा, क्योंकि ड्राइवर को Z Square जल्दी पहुंचना है!</div>
+            </div>
+            <div class="item">
+                <h3>चुटकुला: 3D डिजाइनर ने कार क्यों बनाई?</h3>
+                <button onclick="document.getElementById('joke2').style.display='block'">उत्तर देखो</button>
+                <div id="joke2" class="answer">उत्तर: क्योंकि उसे रियल कार बनाने का टाइम नहीं था!</div>
+            </div>
+        </section>
+        <section id="blog">
+            <h2>लेटेस्ट ब्लॉग</h2>
+            <div class="item">
+                <h3>ISKCON Temple, Kanpur</h3>
+                <p>कांपुर का ये मंदिर भक्ति और शांति का केंद्र है। भगवान कृष्ण के दर्शन के लिए बेस्ट जगह। (डिटेल्स डालो)</p>
+            </div>
+            <div class="item">
+                <h3>Z Square Mall, Kanpur</h3>
+                <p>शॉपिंग, फूड, और मस्ती का हब। कांपुर का सबसे बड़ा मॉल। (डिटेल्स डालो)</p>
+            </div>
+        </section>
+        <section id="qa">
+            <h2>सवाल-जवाब</h2>
+            <div class="item">
+                <h3>प्रश्न: कांपुर में सबसे अच्छा मंदिर कौन सा?</h3>
+                <p>उत्तर: JK Temple अपनी आर्किटेक्चर और Panki Temple भक्ति के लिए फेमस हैं।</p>
+            </div>
+            <div class="item">
+                <h3>प्रश्न: 3D डिजाइनिंग कैसे सीखें?</h3>
+                <p>उत्तर: Shapr3D से शुरू करो, यूट्यूब ट्यूटोरियल्स देखो।</p>
+            </div>
+        </section>
+        <section id="signup">
+            <h2>अपनी यूजर ID बनाएं</h2>
+            <form>
+                <label>नाम: <input type="text" placeholder="अपना नाम डालें" required></label>
+                <label>ईमेल: <input type="email" placeholder="अपना ईमेल डालें" required></label>
+                <label>पासवर्ड: <input type="password" placeholder="पासवर्ड चुनें" required></label>
+                <button type="submit">साइन अप</button>
+            </form>
+            <p>(ये फॉर्म अभी स्टेटिक है। बैकएंड के लिए Firebase या Node.js यूज करो।)</p>
+        </section>
+    </div>
+    <footer>
+        <p>&copy; 2025 Vikasho.com। कांपुर से दुनिया तक—मस्ती, नॉलेज, और कनेक्शन!</p>
+    </footer>
+    <script>
+        // JavaScript for interactivity (e.g., showing answers)
+    </script>
+</body>
+</html>
